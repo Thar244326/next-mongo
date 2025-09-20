@@ -22,21 +22,36 @@ import {
   Select,
   MenuItem,
   FormControl,
-  InputLabel
+  InputLabel,
 } from "@mui/material";
 import { Edit, Delete, Visibility } from "@mui/icons-material";
 
 export default function Home() {
-  const [deleteDialog, setDeleteDialog] = useState({ open: false, product: null });
-
+  const [deleteDialog, setDeleteDialog] = useState({
+    open: false,
+    product: null,
+  });
+  // Update the price column to log the row as well
   const columns = [
-    { field: 'code', headerName: 'Code', width: 120 },
-    { field: 'name', headerName: 'Name', width: 200, flex: 1 },
-    { field: 'description', headerName: 'Description', width: 250, flex: 2 },
-    { field: 'price', headerName: 'Price', width: 100, valueFormatter: (params) => `$${params.value}` },
+    { field: "code", headerName: "Code", width: 120 },
+    { field: "name", headerName: "Name", width: 200, flex: 1 },
+    { field: "description", headerName: "Description", width: 250, flex: 2 },
     {
-      field: 'Action',
-      headerName: 'Action',
+      field: "price",
+      headerName: "Price",
+      width: 120,
+      renderCell: (params) => {
+        const price = params.row.price;
+        if (price === null || price === undefined) {
+          return "-";
+        }
+        const val = Number(price);
+        return isNaN(val) ? "-" : `$${val.toFixed(2)}`;
+      }
+    },
+    {
+      field: "Action",
+      headerName: "Action",
       width: 150,
       sortable: false,
       renderCell: (params) => {
@@ -59,16 +74,18 @@ export default function Home() {
             </IconButton>
             <IconButton
               color="error"
-              onClick={() => setDeleteDialog({ open: true, product: params.row })}
+              onClick={() =>
+                setDeleteDialog({ open: true, product: params.row })
+              }
               size="small"
             >
               <Delete />
             </IconButton>
           </Box>
-        )
-      }
+        );
+      },
     },
-  ]
+  ];
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL;
   console.debug("API_BASE", API_BASE);
@@ -80,6 +97,11 @@ export default function Home() {
   async function fetchProducts() {
     const data = await fetch(`${API_BASE}/product`);
     const p = await data.json();
+    // Log the first product to see its structure
+    if (p && p.length > 0) {
+      console.log("First product from API:", p[0]);
+      console.log("Price value:", p[0].price, "Type:", typeof p[0].price);
+    }
     setProducts(p);
   }
 
@@ -110,13 +132,13 @@ export default function Home() {
         body: JSON.stringify(data),
       }).then(() => {
         stopEditMode();
-        fetchProducts()
+        fetchProducts();
       });
-      return
+      return;
     }
 
     createProduct(data);
-  };
+  }
 
   function startEditMode(product) {
     reset(product);
@@ -149,10 +171,22 @@ export default function Home() {
     fetchProducts();
   };
 
-  const productsWithId = products.map((product) => ({
-    ...product,
-    id: product._id
-  }));
+  // Modify the productsWithId mapping to explicitly set the price field
+  const productsWithId = products.map((product) => {
+    // Log one product after mapping to check if price is preserved
+    if (product._id && !window.loggedProduct) {
+      console.log("Mapped product:", {...product, id: product._id});
+      console.log("Price after mapping:", product.price, "Type:", typeof product.price);
+      window.loggedProduct = true;
+    }
+    
+    // Explicitly assign price for MUI DataGrid
+    return {
+      ...product,
+      id: product._id,
+      price: product.price, // Force the price field to be correctly set
+    };
+  });
 
   useEffect(() => {
     fetchCategory();
@@ -170,10 +204,13 @@ export default function Home() {
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                {editMode ? 'Edit Product' : 'Add New Product'}
+                {editMode ? "Edit Product" : "Add New Product"}
               </Typography>
 
-              <Box component="form" onSubmit={handleSubmit(handleProductFormSubmit)}>
+              <Box
+                component="form"
+                onSubmit={handleSubmit(handleProductFormSubmit)}
+              >
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
                     <TextField
@@ -236,7 +273,13 @@ export default function Home() {
                   </Grid>
 
                   <Grid item xs={12}>
-                    <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        gap: 2,
+                        justifyContent: "flex-end",
+                      }}
+                    >
                       {editMode ? (
                         <>
                           <Button
@@ -271,7 +314,7 @@ export default function Home() {
         </Grid>
 
         <Grid item xs={12} md={8}>
-          <Paper sx={{ height: 600, width: '100%' }}>
+          <Paper sx={{ height: 600, width: "100%" }}>
             <DataGrid
               rows={productsWithId}
               columns={columns}
@@ -288,14 +331,12 @@ export default function Home() {
         </Grid>
       </Grid>
 
-      <Dialog
-        open={deleteDialog.open}
-        onClose={handleDeleteCancel}
-      >
+      <Dialog open={deleteDialog.open} onClose={handleDeleteCancel}>
         <DialogTitle>Delete Product</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete &quot;{deleteDialog.product?.name}&quot;? This action cannot be undone.
+            Are you sure you want to delete &quot;{deleteDialog.product?.name}
+            &quot;? This action cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -308,4 +349,3 @@ export default function Home() {
     </Container>
   );
 }
-
