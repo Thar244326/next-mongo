@@ -232,7 +232,7 @@ export default function Home() {
         <DialogTitle>Delete Category</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete "{deleteDialog.category?.name}"? This action cannot be undone.
+            Are you sure you want to delete &quot;{deleteDialog.category?.name}&quot;? This action cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>

@@ -85,7 +85,7 @@ export default function ProductDetail() {
   }, [params.id]);
 
   const handleDelete = async () => {
-    if (!confirm(`Are you sure you want to delete "${product.name}"?`)) return;
+    if (!confirm(`Are you sure you want to delete &quot;${product.name}&quot;?`)) return;
 
     try {
       await fetch(`${API_BASE}/product/${params.id}`, {
@@ -112,7 +112,7 @@ export default function ProductDetail() {
     return (
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
+          {error.replace(/"/g, '&quot;')}
         </Alert>
         <Button
           variant="contained"
