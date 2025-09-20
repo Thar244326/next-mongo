@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  basePath: '/app/stock',
   experimental: {
-      basePath: '/app/stock',
     instrumentationHook: true,
   },
 };
