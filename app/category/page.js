@@ -3,21 +3,54 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
 import { DataGrid } from "@mui/x-data-grid";
+import { 
+  Container, 
+  Paper, 
+  TextField, 
+  Button, 
+  Typography, 
+  Box, 
+  Grid, 
+  Card, 
+  CardContent,
+  IconButton,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle
+} from "@mui/material";
+import { Edit, Delete } from "@mui/icons-material";
 
 export default function Home() {
+  const [deleteDialog, setDeleteDialog] = useState({ open: false, category: null });
 
   const columns = [
-    // { field: 'id', headerName: 'ID', width: 90 },
-    { field: 'name', headerName: 'Name', width: 150 },
+    { field: 'name', headerName: 'Name', width: 200, flex: 1 },
     { field: 'order', headerName: 'Order', width: 150 },
     {
-      field: 'Action', headerName: 'Action', width: 150,
+      field: 'Action', 
+      headerName: 'Action', 
+      width: 150,
+      sortable: false,
       renderCell: (params) => {
         return (
-          <div>
-            <button onClick={() => startEditMode(params.row)}>📝</button>
-            <button onClick={() => deleteCategory(params.row)}>🗑️</button>
-          </div>
+          <Box>
+            <IconButton 
+              color="primary" 
+              onClick={() => startEditMode(params.row)}
+              size="small"
+            >
+              <Edit />
+            </IconButton>
+            <IconButton 
+              color="error" 
+              onClick={() => setDeleteDialog({ open: true, category: params.row })}
+              size="small"
+            >
+              <Delete />
+            </IconButton>
+          </Box>
         )
       }
     },
@@ -69,8 +102,10 @@ export default function Home() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
-    }).then(() => fetchCategory());
-
+    }).then(() => {
+      fetchCategory();
+      reset({ name: '', order: '' });
+    });
   }
 
   function startEditMode(category) {
@@ -87,9 +122,18 @@ export default function Home() {
     setEditMode(false)
   }
 
-  async function deleteCategory(category) {
-    if (!confirm(`Are you sure to delete [${category.name}]`)) return;
+  function handleDeleteConfirm() {
+    if (deleteDialog.category) {
+      deleteCategory(deleteDialog.category);
+      setDeleteDialog({ open: false, category: null });
+    }
+  }
 
+  function handleDeleteCancel() {
+    setDeleteDialog({ open: false, category: null });
+  }
+
+  async function deleteCategory(category) {
     const id = category._id
     await fetch(`${API_BASE}/category/${id}`, {
       method: "DELETE"
@@ -98,75 +142,106 @@ export default function Home() {
   }
 
   return (
-    <main>
-      <form onSubmit={handleSubmit(handleCategoryFormSubmit)}>
-        <div className="grid grid-cols-2 gap-4 w-fit m-4 border border-gray-800 p-2">
-          <div>Category name:</div>
-          <div>
-            <input
-              name="name"
-              type="text"
-              {...register("name", { required: true })}
-              className="border border-gray-600 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-            />
-          </div>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Typography variant="h4" component="h1" gutterBottom>
+        Category Management
+      </Typography>
 
-          <div>Order:</div>
-          <div>
-            <input
-              name="order"
-              type="number"
-              {...register("order", { required: true })}
-              className="border border-gray-600 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-            />
-          </div>
+      <Card sx={{ mb: 4 }}>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            {editMode ? 'Edit Category' : 'Add New Category'}
+          </Typography>
+          
+          <Box component="form" onSubmit={handleSubmit(handleCategoryFormSubmit)}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Category Name"
+                  variant="outlined"
+                  {...register("name", { required: true })}
+                  size="small"
+                />
+              </Grid>
+              
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Order"
+                  type="number"
+                  variant="outlined"
+                  {...register("order", { required: true })}
+                  size="small"
+                />
+              </Grid>
 
-          <div className="col-span-2 text-right">
-            {editMode ?
-              <>
-                <input
-                  type="submit"
-                  className="italic bg-blue-800 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
-                  value="Update" />
+              <Grid item xs={12}>
+                <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+                  {editMode ? (
+                    <>
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        color="primary"
+                      >
+                        Update
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        onClick={() => stopEditMode()}
+                      >
+                        Cancel
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      color="success"
+                    >
+                      Add Category
+                    </Button>
+                  )}
+                </Box>
+              </Grid>
+            </Grid>
+          </Box>
+        </CardContent>
+      </Card>
 
-                {' '}
-                <button
-                  onClick={() => stopEditMode()}
-                  className=" italic bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-full"
-                >Cancel
-                </button>
-              </>
-              :
-              <input
-                type="submit"
-                value="Add"
-                className="w-20 italic bg-green-800 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full"
-              />
-            }
-          </div>
-        </div>
-      </form>
-
-      <div className="mx-4">
+      <Paper sx={{ height: 400, width: '100%' }}>
         <DataGrid
           rows={categoryList}
           columns={columns}
+          pageSizeOptions={[5, 10, 25]}
+          initialState={{
+            pagination: {
+              paginationModel: { page: 0, pageSize: 10 },
+            },
+          }}
+          checkboxSelection
+          disableRowSelectionOnClick
         />
-      </div>
+      </Paper>
 
-      {/* <div className="ml-4">
-        <h1 className="text-xl font-bold">Category ({categoryList.length})</h1>
-        {categoryList.map((category) => (
-          <div key={category._id} className="ml-4">
-            ‣
-            <button onClick={() => startEditMode(category)} className="mr-2">📝</button>
-            <button onClick={() => deleteCategory(category)} className="mr-2">🗑️</button>
-            <Link href={`/product/category/${category._id}`} className="text-red-600">
-              {category.name} → {category.order}
-            </Link>
-          </div>
-        ))}
-      </div> */}
-    </main>
+      <Dialog
+        open={deleteDialog.open}
+        onClose={handleDeleteCancel}
+      >
+        <DialogTitle>Delete Category</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete "{deleteDialog.category?.name}"? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteCancel}>Cancel</Button>
+          <Button onClick={handleDeleteConfirm} color="error" autoFocus>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
   );
 }
