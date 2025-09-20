@@ -13,10 +13,10 @@ export default function BoxBasic() {
         <h1 className="text-3xl text-violet-950">Stock Management v1.0</h1>
         <ul>
           <li>
-            <Link href="./product">Category</Link>
+            <Link href="stock/product">Product</Link>
           </li>
           <li>
-            <Link href="./category">Category</Link>
+            <Link href="stock/category">Category</Link>
           </li>
         </ul>
       </Box>
