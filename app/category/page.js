@@ -26,8 +26,30 @@ export default function Home() {
   const [deleteDialog, setDeleteDialog] = useState({ open: false, category: null });
 
   const columns = [
-    { field: 'name', headerName: 'Name', width: 200, flex: 1 },
-    { field: 'order', headerName: 'Order', width: 150 },
+    { 
+      field: 'name', 
+      headerName: 'Name', 
+      flex: 1,
+      renderCell: (params) => (
+        <Typography sx={{ fontWeight: 'medium' }}>{params.value}</Typography>
+      )
+    },
+    { 
+      field: 'order', 
+      headerName: 'Order', 
+      width: 150,
+      renderCell: (params) => (
+        <Box sx={{ 
+          bgcolor: 'primary.main', 
+          color: 'white',
+          px: 2,
+          py: 0.5,
+          borderRadius: 1
+        }}>
+          {params.value}
+        </Box>
+      )
+    },
     {
       field: 'Action', 
       headerName: 'Action', 
@@ -142,13 +164,36 @@ export default function Home() {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Category Management
-      </Typography>
+    <Container maxWidth="lg" sx={{ 
+      py: 4,
+      background: 'linear-gradient(to bottom, #f8f9fa, #ffffff)',
+      minHeight: '100vh'
+    }}>
+      <Box sx={{ mb: 5 }}>
+        <Typography variant="h4" component="h1" 
+          sx={{ 
+            fontWeight: 'bold',
+            background: 'linear-gradient(45deg, #1976d2 30%, #2196f3 90%)',
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            textShadow: '0 2px 4px rgba(0,0,0,0.1)',
+            mb: 2
+          }}>
+          Category Management
+        </Typography>
+      </Box>
 
-      <Card sx={{ mb: 4 }}>
-        <CardContent>
+      <Card sx={{ 
+        mb: 4,
+        transition: 'transform 0.3s',
+        background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+        '&:hover': {
+          transform: 'translateY(-4px)',
+          boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
+        }
+      }}>
+        <CardContent sx={{ p: 3 }}>
           <Typography variant="h6" gutterBottom>
             {editMode ? 'Edit Category' : 'Add New Category'}
           </Typography>
@@ -210,15 +255,38 @@ export default function Home() {
         </CardContent>
       </Card>
 
-      <Paper sx={{ height: 400, width: '100%' }}>
+      <Paper sx={{ 
+        height: 400, 
+        width: '100%',
+        borderRadius: 2,
+        overflow: 'hidden',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+        background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+      }}>
         <DataGrid
           rows={categoryList}
           columns={columns}
           pageSizeOptions={[5, 10, 25]}
           initialState={{
-            pagination: {
-              paginationModel: { page: 0, pageSize: 10 },
+            pagination: { paginationModel: { page: 0, pageSize: 10 } },
+          }}
+          sx={{
+            border: 'none',
+            '& .MuiDataGrid-row:hover': {
+              bgcolor: 'rgba(25, 118, 210, 0.08)',
             },
+            '& .MuiDataGrid-columnHeaders': {
+              bgcolor: 'transparent',
+              borderBottom: '2px solid',
+              borderColor: 'primary.light',
+              '& .MuiDataGrid-columnHeaderTitle': {
+                fontWeight: 'bold',
+                color: 'primary.main'
+              }
+            },
+            '& .MuiDataGrid-cell': {
+              borderColor: 'rgba(224, 224, 224, 0.5)'
+            }
           }}
           checkboxSelection
           disableRowSelectionOnClick

@@ -33,20 +33,46 @@ export default function Home() {
   });
   // Update the price column to log the row as well
   const columns = [
-    { field: "code", headerName: "Code", width: 120 },
-    { field: "name", headerName: "Name", width: 200, flex: 1 },
-    { field: "description", headerName: "Description", width: 250, flex: 2 },
-    {
+    { 
+      field: "code", 
+      headerName: "Code", 
+      width: 120,
+      renderCell: (params) => (
+        <Box sx={{ 
+          bgcolor: 'grey.100',
+          px: 1.5,
+          py: 0.5,
+          borderRadius: 1,
+          fontFamily: 'monospace'
+        }}>
+          {params.value}
+        </Box>
+      )
+    },
+    { 
+      field: "name", 
+      headerName: "Name", 
+      flex: 1,
+      renderCell: (params) => (
+        <Typography sx={{ fontWeight: 'medium' }}>{params.value}</Typography>
+      )
+    },
+    { 
       field: "price",
       headerName: "Price",
       width: 120,
       renderCell: (params) => {
         const price = params.row.price;
-        if (price === null || price === undefined) {
-          return "-";
-        }
+        if (price === null || price === undefined) return "-";
         const val = Number(price);
-        return isNaN(val) ? "-" : `$${val.toFixed(2)}`;
+        return isNaN(val) ? "-" : (
+          <Box sx={{ 
+            color: 'success.main',
+            fontWeight: 'bold'
+          }}>
+            ${val.toFixed(2)}
+          </Box>
+        );
       }
     },
     {
@@ -195,13 +221,36 @@ export default function Home() {
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Product Management
-      </Typography>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" component="h1" 
+          sx={{ 
+            fontWeight: 'bold',
+            position: 'relative',
+            '&:after': {
+              content: '""',
+              position: 'absolute',
+              bottom: '-8px',
+              left: 0,
+              width: '60px',
+              height: '4px',
+              backgroundColor: 'primary.main',
+              borderRadius: '2px'
+            }
+          }}>
+          Product Management
+        </Typography>
+      </Box>
 
       <Grid container spacing={4}>
         <Grid item xs={12} md={4}>
-          <Card>
+          <Card sx={{ 
+            position: 'sticky',
+            top: 20,
+            transition: 'transform 0.3s',
+            '&:hover': {
+              transform: 'translateY(-4px)',
+            }
+          }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
                 {editMode ? "Edit Product" : "Add New Product"}
@@ -314,15 +363,28 @@ export default function Home() {
         </Grid>
 
         <Grid item xs={12} md={8}>
-          <Paper sx={{ height: 600, width: "100%" }}>
+          <Paper sx={{ 
+            height: 600,
+            borderRadius: 2,
+            overflow: 'hidden',
+            boxShadow: 3
+          }}>
             <DataGrid
               rows={productsWithId}
               columns={columns}
               pageSizeOptions={[5, 10, 25]}
               initialState={{
-                pagination: {
-                  paginationModel: { page: 0, pageSize: 10 },
+                pagination: { paginationModel: { page: 0, pageSize: 10 } },
+              }}
+              sx={{
+                '& .MuiDataGrid-row:hover': {
+                  bgcolor: 'action.hover',
                 },
+                '& .MuiDataGrid-columnHeaders': {
+                  bgcolor: 'background.default',
+                  borderBottom: '2px solid',
+                  borderColor: 'divider'
+                }
               }}
               checkboxSelection
               disableRowSelectionOnClick
